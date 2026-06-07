@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Markdown to HTML Converter</title>
+	<style>
+	</style>
+</head>
+<body>
+	<h1>Complaint Form</h1>
+	<form id="form">
+		<fieldset id="personal-info">
+			<div>
+				<label for="full-name">Full Name:</label>
+				<input type="text" id="full-name" name="full-name" placeholder="John Doe">
+			</div>
+
+			<div>
+				<label for="email">Email Address:</label>
+				<input type="email" id="email" name="email" placeholder="example@domain.com">
+			</div>
+		</fieldset>
+		<hr>
+		<fieldset id="product-info">
+			<div>
+				<label for="order-no">Order No:</label>
+				<input type="text" id="order-no" name="order-no" placeholder="2024######">
+
+			</div>
+			<div>
+				<label for="product-code">Product Code:</label>
+				<input type="text" id="product-code" name="product-code" placeholder="XX##-X###-XX#">
+			</div>
+			<div>
+				<label for="quantity">Quantity:</label>
+				<input type="number" id="quantity" name="quantity" min="1">
+			</div>
+		</fieldset>
+
+		<fieldset id="complaints-group">
+			<legend>Complaint Reason:</legend>
+			<div>
+				<input type="checkbox" id="damaged-product" name="complaint" value="damaged-product">
+				<label for="damaged-product">Damaged Product</label>
+			</div>
+
+			<div>
+				<input type="checkbox" id="nonconforming-product" name="complaint" value="nonconforming-product">
+				<label for="nonconforming-product">Nonconforming Product</label>
+			</div>
+
+			<div>
+				<input type="checkbox" id="delayed-dispatch" name="complaint" value="delayed-dispatch">
+				<label for="delayed-dispatch">Delayed Dispatch</label>
+			</div>
+
+			<div>
+				<input type="checkbox" id="other-complaint" name="complaint" value="other">
+				<label for="other-complaint" aria-expanded="false" aria-controls="complaint-description-container">Other</label>
+			</div>
+		</fieldset>
+
+		<fieldset id="complaint-description-container" hidden>
+			<legend>Description of Complaint Reason</legend>
+			<textarea
+				placeholder="Describe the reason of your complaint in at least 20 characters"
+				name="complaint-textarea"
+				id="complaint-description"
+				minLength="20"
+				></textarea>
+		</fieldset>
+
+		<fieldset id="solutions-group">
+			<legend>Desired Solution</legend>
+			<input type="radio" name="solutions" id="refund" value="refund">
+			<label for="refund">Refund</label>
+
+			<input type="radio"  name="solutions" id="exchange" value="exchange">
+			<label for="exchange">Exchange</label>
+
+			<input type="radio" name="solutions" id="other-solution" value="other">
+			<label for="other-solution" aria-expanded="false" aria-controls="solution-description-container">Other</label>
+		</fieldset>
+
+		<fieldset id="solution-description-container" hidden>
+			<legend>Description of Desired Solution</legend>
+			<textarea
+				placeholder="Describe the desired solution to your issue in at least 20 characters"
+				name="solution-textarea"
+				id="solution-description"
+				minLength="20"
+				></textarea>
+		</fieldset>
+		<div id="btn-container">
+			<button type="submit" id="submit-btn">Submit</button>
+			<span id="message-box" aria-live="polite"></span>
+			<button type="button" id="clearBtn">Clear</button>
+		</div>
+
+	</form>
+	<script>
+		const audio = new Audio()
+		console.log(audio)
+		const form = document.getElementById('form');
+		const fullName = document.getElementById("full-name");
+		const email = document.getElementById("email");
+		const orderNo = document.getElementById("order-no");
+		const productCode = document.getElementById("product-code");
+		const quantity = document.getElementById("quantity");
+		
+		const complaintsGroup = document.getElementById('complaints-group');
+		const otherComplaints = document.getElementById("other-complaint");
+		const complaintDescription = document.getElementById("complaint-description");
+		const complaintContainer = document.getElementById("complaint-description-container");
+		
+		
+		const solutionsGroup = document.getElementById('solutions-group');
+		const otherSolutions = document.getElementById("other-solution");
+		const solutionDescription = document.getElementById("solution-description");
+		const solutionContainer = document.getElementById("solution-description-container")
+
+		
+		const message = document.getElementById("message-box");
+		const clearBtn = document.getElementById('clearBtn');
+		
+		function validateForm() {
+
+			const validInput = {};
+
+			validInput["full-name"] = fullName.value.trim() !== "";
+
+			validInput["email"] = /^.+@.+\.com$/.test(email.value.trim());
+
+			
+			validInput["order-no"] = /^2024\d{6}$/.test(orderNo.value.trim());
+			
+			validInput["product-code"] = /^[a-zA-Z]{2}\d{2}-[a-zA-Z]{1}\d{3}-[a-zA-Z]{2}\d{1}$/.test(productCode.value.trim());
+			
+			
+			validInput["quantity"] = quantity.value > 0;
+			
+			const complaintCheckbox = complaintsGroup.querySelectorAll('input[type="checkbox"]:checked')
+			validInput["complaints-group"] = complaintCheckbox.length > 0;
+
+			const solutionRadio = solutionsGroup.querySelectorAll('input[type="radio"]:checked')
+			validInput["solutions-group"] = solutionRadio.length > 0;
+
+
+			const expandedComplaints = otherComplaints.getAttribute("aria-expanded") === true;
+			otherComplaints.setAttribute("aria-expanded", String(!expandedComplaints))
+			complaintContainer.hidden = otherComplaints.checked ? expandedComplaints: "false";
+			
+			if (otherComplaints.checked) {
+				validInput["complaint-description"] = complaintDescription.value.trim().length >= 20;
+			} else {
+				validInput["complaint-description"] = true;
+			}
+			
+			const expandedSolution = otherSolutions.getAttribute("aria-expanded") === true;
+			otherSolutions.setAttribute("aria-expanded", String(!expandedSolution))
+			solutionContainer.hidden = otherSolutions.checked ? expandedSolution: "false";
+			
+			if (otherSolutions.checked) {
+				validInput["solution-description"] = solutionDescription.value.trim().length >= 20;
+			} else {
+				validInput["solution-description"] = true;
+			}
+
+			return validInput;
+		}
+		
+		
+
+		function updateBorderColor(element, isValid) {
+			element.style.borderColor = isValid ? "green": "red";
+		}
+		
+		fullName.addEventListener("change", () =>{
+			updateBorderColor(fullName, validateForm()["full-name"]);
+		})
+		
+		email.addEventListener("change", () =>{
+			updateBorderColor(email, validateForm()["email"]);
+		})
+		
+		orderNo.addEventListener("change", () =>{
+			updateBorderColor(orderNo, validateForm()["order-no"]);
+		})
+		
+		productCode.addEventListener("change", () =>{
+			updateBorderColor(productCode, validateForm()["product-code"]);
+		})
+		
+		quantity.addEventListener("change", () =>{
+			updateBorderColor(quantity, validateForm()["quantity"]);
+		})
+		
+		complaintsGroup.addEventListener("change", () =>{
+			updateBorderColor(complaintsGroup, validateForm()["complaints-group"]);
+		})
+		
+		complaintDescription.addEventListener("change", () =>{
+			updateBorderColor(complaintDescription, validateForm()["complaint-description"]);
+		})
+		
+		solutionsGroup.addEventListener("change", () =>{
+			updateBorderColor(solutionsGroup, validateForm()["solutions-group"]);
+		})
+		
+		solutionDescription.addEventListener("change", () =>{
+			updateBorderColor(solutionDescription, validateForm()["solution-description"]);
+		})
+
+		function isValid(truthy) {
+			return Object.values(truthy).every(value => value === true);
+		}
+			
+		form.addEventListener("submit", (e) => {
+			
+			const currentStatusMap = validateForm();
+			
+			const formIsClean = isValid(currentStatusMap);
+			
+			updateBorderColor(fullName, currentStatusMap["full-name"]);
+			
+			updateBorderColor(email, currentStatusMap["email"]);
+			
+			updateBorderColor(orderNo, currentStatusMap["order-no"]);
+			
+			updateBorderColor(productCode, currentStatusMap["product-code"]);
+			
+			updateBorderColor(quantity, currentStatusMap["quantity"]);
+			
+			updateBorderColor(complaintsGroup, currentStatusMap["complaints-group"]);
+			
+			updateBorderColor(solutionsGroup, currentStatusMap["solutions-group"]);
+			
+			
+			if(otherComplaints.checked){
+				updateBorderColor(complaintDescription, currentStatusMap["complaint-description"]);
+			}
+			
+			if(otherSolutions.checked){
+				updateBorderColor(solutionDescription, currentStatusMap["complaint-description"]);
+			}
+			
+			if(!formIsClean){
+				e.preventDefault();
+				message.textContent = "Please, fill out the required fields correctly before submitting."
+			}
+	
+		});
+		
+		clearBtn.addEventListener('click', () => {
+			form.reset();
+			const elementsToReset = [
+                fullName, email, orderNo, productCode, 
+                quantity, complaintsGroup, complaintDescription, 
+                solutionsGroup, solutionDescription
+            ];
+            elementsToReset.forEach(el => el.style.borderColor = '#a3a3a3');
+            if(!complaintContainer.hidden){
+            	complaintContainer.hidden = "true"
+            }
+            if(!solutionDescription.hidden){
+            	solutionDescription.hidden = "true"
+            }
+            message.textContent = "";
+		});
+		
+		const prcode = "XX55-X888-XX9";
+		const orcode = "2024788811"
+		
+
+	</script>
+</body>
+</html>
